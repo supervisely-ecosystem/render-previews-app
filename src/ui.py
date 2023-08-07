@@ -163,9 +163,9 @@ def preview():
         ) * rgba[:, :, :3]
         rgb_overlap = np.clip(overlay_result, 0, 255).astype(np.uint8)
 
-        local_path_rgb = os.path.join(os.getcwd(), "APP_DATA/resizedorigs", f"{image.id}.png")
-        local_path_rgba = os.path.join(os.getcwd(), "APP_DATA/renders", f"{image.id}.png")
-        local_path_overlap = os.path.join(os.getcwd(), "APP_DATA/overlaps", f"{image.id}.png")
+        local_path_rgb = os.path.join(g.STORAGE_DIR, "resizedorigs", f"{image.id}.png")
+        local_path_rgba = os.path.join(g.STORAGE_DIR, "renders", f"{image.id}.png")
+        local_path_overlap = os.path.join(g.STORAGE_DIR, "overlaps", f"{image.id}.png")
 
         # if os.path.exists(local_path_rgba):
         #     os.remove(local_path_rgba)
