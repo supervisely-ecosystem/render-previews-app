@@ -14,14 +14,14 @@ app = FastAPI()
 
 
 @app.post("/renders")
-async def image_endpoint(image_id: int):
+async def image_endpoint(project_id, image_id):
     OUTPUT_WIDTH_PX = settings_dict.get("OUTPUT_WIDTH_PX", 500)
     BBOX_THICKNESS_PERCENT = settings_dict.get("BBOX_THICKNESS_PERCENT", 0.005)
     BBOX_OPACITY = 1
     FILLBBOX_OPACITY = settings_dict.get("FILLBBOX_OPACITY", 0.2)
     MASK_OPACITY = settings_dict.get("MASK_OPACITY", 0.7)
 
-    project_id = g.api.image.get_project_id(image_id)
+    # project_id = g.api.image.get_project_id(image_id)
     project_meta = sly.ProjectMeta.from_json(g.JSON_METAS[project_id])
 
     jann = g.api.annotation.download_json(image_id)
