@@ -1,4 +1,4 @@
 supervisely
-
+scikit-image
 # code formatter
 black

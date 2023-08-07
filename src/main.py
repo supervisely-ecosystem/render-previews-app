@@ -1,15 +1,12 @@
-import supervisely as sly
-
-from supervisely.app.widgets import Container
+import os
+from pathlib import Path
 
 import src.globals as g
-import src.ui.input as input
-import src.ui.settings as settings
-import src.ui.output as output
+import supervisely as sly
+from src.ui import card_1
+from supervisely.app.widgets import Container
 
-layout = Container(widgets=[input.card, settings.card, output.card])
+layout = Container(widgets=[card_1], direction="vertical")
 
-# * If the app uses static dir, it should be passed as a parameter.
-# * If not needed the app can be initialized without static_dir parameter.
-# * app = sly.Application(layout=layout)
-app = sly.Application(layout=layout, static_dir=g.STATIC_DIR)
+static_dir = Path(g.STORAGE_DIR)
+app = sly.Application(layout=layout, static_dir=static_dir)

@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Local debug",
+            "name": "Uvicorn",
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
@@ -17,7 +17,7 @@
                 "--reload"
             ],
             "jinja": true,
-            "justMyCode": true,
+            "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}:${PYTHONPATH}",
                 "LOG_LEVEL": "DEBUG"
