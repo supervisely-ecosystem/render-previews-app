@@ -8,7 +8,15 @@ from starlette.responses import StreamingResponse
 import src.globals as g
 import src.utils as u
 import supervisely as sly
-from src.ui import settings_dict
+
+# from src.ui import settings_dict
+
+settings_dict = {
+    "BBOX_THICKNESS_PERCENT": 0.5,
+    "FILLBBOX_OPACITY": 0.2,
+    "MASK_OPACITY": 0.7,
+    "OUTPUT_WIDTH_PX": 500,
+}
 
 app = FastAPI()
 
