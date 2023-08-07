@@ -21,7 +21,7 @@ STORAGE_DIR = sly.app.get_data_dir()
 
 sly.logger.info("Loading project metas. Please wait...")
 project_ids = [project.id for project in api.project.get_list(WORKSPACE_ID)]
-project_metas_json = [api.project.get_meta(id) for id in project_ids]
-sly.logger.info("Project meta successfully loaded")
+# project_metas_json = [api.project.get_meta(id) for id in project_ids]
+# sly.logger.info("Project meta successfully loaded")
 
-JSON_METAS = {k: v for k, v in zip(project_ids, project_metas_json)}
+# JSON_METAS = {k: v for k, v in zip(project_ids, project_metas_json)}
