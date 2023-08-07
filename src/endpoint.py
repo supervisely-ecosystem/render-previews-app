@@ -33,4 +33,8 @@ async def image_endpoint(project_id, image_id):
     )
 
     # res, im_png = cv2.imencode(".png", rgba)
-    return StreamingResponse(io.BytesIO(rgba.tobytes()), media_type="image/png")
+    return StreamingResponse(
+        io.BytesIO(rgba.tobytes()),
+        media_type="image/png",
+        headers={"Cache-Control": "max-age=604800", "Content-Type": "image/png"},
+    )
