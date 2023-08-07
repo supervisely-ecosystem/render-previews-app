@@ -35,15 +35,15 @@ progress_bar = Progress(show_percents=False)
 
 input_tf_dest_dir = Input(placeholder="Please input here destination directory in Team files")
 
-settings_dict = {
+dct = {
     "BBOX_THICKNESS_PERCENT": 0.5,
     "FILLBBOX_OPACITY": 0.2,
     "MASK_OPACITY": 0.7,
     "OUTPUT_WIDTH_PX": 500,
 }
-editor = Editor(initial_text=json.dumps(settings_dict, indent=4))
+editor = Editor(initial_text=json.dumps(dct, indent=4))
 button_preview = Button(text="Preview Image")
-button_save = Button(text="Save settings to team files")
+button_save = Button(text="Save settings")
 
 # select1 = ProjectSelector()
 # select_proj = SelectProject(workspace_/id=28, default_id=1195)
@@ -73,12 +73,13 @@ card_1 = Card(
 )
 
 progress_bar.hide()
-button_save.disable()
+# button_save.disable()
 
 
 @button_save.click
 def save():
-    img_mask.set("static/renders/1764964.png")
+    global settings_dict
+    settings_dict = json.loads(editor.get_text())
 
 
 @button_preview.click
@@ -88,8 +89,11 @@ def preview():
     item_id = select_item.get_selected_id()
 
     proj_id = g.api.image.get_project_id(select_item.get_selected_id())
-    project = g.api.project.get_info_by_id(proj_id)
-    project_meta = sly.ProjectMeta.from_json(g.api.project.get_meta(project.id))
+
+    # project = g.api.project.get_info_by_id(proj_id)
+    project_meta = sly.ProjectMeta.from_json(g.api.project.get_meta(proj_id))
+
+    # project_meta = g.JSON_METAS[proj_id]
 
     image = g.api.image.get_info_by_id(item_id)
     jann = g.api.annotation.download_json(item_id)
@@ -97,13 +101,14 @@ def preview():
 
     OUTPUT_WIDTH_PX = data_dict.get("OUTPUT_WIDTH_PX", 500)
     BBOX_THICKNESS_PERCENT = data_dict.get("BBOX_THICKNESS_PERCENT", 0.005)
-    BBOX_OPACITY = data_dict.get("BBOX_OPACITY", 1)
-    FILLBBOX_OPACITY = data_dict.get("FILLBBOX_OPACITY", 0)
+    BBOX_OPACITY = 1
+    FILLBBOX_OPACITY = data_dict.get("FILLBBOX_OPACITY", 0.2)
     MASK_OPACITY = data_dict.get("MASK_OPACITY", 0.7)
+
     # u.save_preview(image, ann, dst_path)
 
     for image, ann in zip([image], [ann]):
-        out_size = (int((image.height / image.width) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
+        out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
         try:
             ann = ann.resize(out_size)
         except ValueError:
@@ -120,7 +125,7 @@ def preview():
             elif type(label.geometry) == sly.Rectangle:
                 thickness = u.get_thickness(render_bbox, BBOX_THICKNESS_PERCENT)
                 label.draw_contour(render_bbox, thickness=thickness)
-                # label.draw(render_fillbbox)
+                label.draw(render_fillbbox)
             else:
                 label.draw(render_mask)
 
@@ -134,22 +139,20 @@ def preview():
         ) * 255
         alpha_bbox[alpha_bbox < 0] = 0
 
-        # alpha_fillbbox = (
-        #     FILLBBOX_OPACITY - np.all(render_fillbbox == [0, 0, 0], axis=-1).astype("uint8")
-        # ) * 255
-        # alpha_fillbbox[alpha_fillbbox < 0] = 0
+        alpha_fillbbox = (
+            FILLBBOX_OPACITY - np.all(render_fillbbox == [0, 0, 0], axis=-1).astype("uint8")
+        ) * 255
+        alpha_fillbbox[alpha_fillbbox < 0] = 0
 
-        # alpha = np.where(alpha_mask != 0, alpha_mask, alpha_fillbbox)
-        alpha = np.where(alpha_bbox != 0, alpha_bbox, alpha_mask)
+        alpha = np.where(alpha_mask != 0, alpha_mask, alpha_fillbbox)
+        alpha = np.where(alpha_bbox != 0, alpha_bbox, alpha)
 
         rgba_mask = np.dstack((render_mask, alpha_mask))
         rgba_bbox = np.dstack((render_bbox, alpha_bbox))
-        # render_fillbbox = np.dstack((render_fillbbox, alpha_fillbbox))
+        render_fillbbox = np.dstack((render_fillbbox, alpha_fillbbox))
 
-        # rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
-        rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba_mask)
-
-        # rgba = render_fillbbox
+        rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
+        rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba)
 
         orig = g.api.image.download_np(image.id)
         rgb = cv2.resize(orig, (out_size[1], out_size[0]))

@@ -13,8 +13,15 @@ if sly.is_development():
 api: sly.Api = sly.Api.from_env()
 
 TEAM_ID = sly.env.team_id()
-# WORKSPACE_ID = sly.env.workspace_id()
+WORKSPACE_ID = sly.env.workspace_id()
 # PROJECT_ID = sly.env.project_id()
 # DATASET_ID = sly.env.dataset_id(raise_not_found=False)
 
 STORAGE_DIR = sly.app.get_data_dir()
+
+sly.logger.info("Loading project metas. Please wait...")
+project_ids = [project.id for project in api.project.get_list(WORKSPACE_ID)]
+project_metas_json = [api.project.get_meta(id) for id in project_ids]
+sly.logger.info("Project meta successfully loaded")
+
+JSON_METAS = {k: v for k, v in zip(project_ids, project_metas_json)}
