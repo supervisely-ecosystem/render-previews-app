@@ -50,13 +50,13 @@ def get_settings() -> dict:
 
 
 @button_save.click
-def save():
+def save() -> None:
     global settings_dict
     settings_dict = json.loads(editor.get_text())
 
 
 @button_preview.click
-def preview():
+def preview() -> None:
     settings = json.loads(editor.get_text())
 
     item_id = select_item.get_selected_id()
