@@ -56,4 +56,4 @@ def get_rgba_np(
     rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
     rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba)
 
-    return rgba
+    return rgba, alpha, out_size
