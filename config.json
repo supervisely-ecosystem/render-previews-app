@@ -3,11 +3,7 @@
   "version": "2.0.0",
   "name": "Render previews GUI",
   "description": "",
-  "categories": [
-    "images",
-    "labeling",
-    "PLACEHOLDER: input all categories here"
-  ],
+  "categories": ["dev"],
   "icon": "",
   "icon_cover": true,
   "headless": false,
