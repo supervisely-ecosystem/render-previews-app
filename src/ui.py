@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import cv2
 import numpy as np
@@ -15,6 +16,7 @@ from supervisely.app.widgets import (
     Empty,
     Image,
     SelectItem,
+    Text,
 )
 
 settings_dict = {
@@ -27,6 +29,7 @@ editor = Editor(initial_text=json.dumps(settings_dict, indent=4))
 
 button_preview = Button(text="Preview Image")
 button_save = Button(text="Save settings")
+infotext = Text("Settings saved", "success")
 select_item = SelectItem(dataset_id=2343, compact=False)
 
 img_orig, img_mask, img_overlap = Image(), Image(), Image()
@@ -38,11 +41,17 @@ card_1 = Card(
         widgets=[
             select_item,
             editor,
-            Container([button_preview, button_save, Empty()], "horizontal", fractions=[1, 1, 8]),
+            Container(
+                [button_preview, button_save, infotext, Empty()],
+                "horizontal",
+                fractions=[1, 1, 1, 8],
+            ),
             Container([img_orig, img_mask, img_overlap], "horizontal"),
         ]
     ),
 )
+
+infotext.hide()
 
 
 def get_settings() -> dict:
@@ -53,6 +62,9 @@ def get_settings() -> dict:
 def save() -> None:
     global settings_dict
     settings_dict = json.loads(editor.get_text())
+    infotext.show()
+    time.sleep(2)
+    infotext.hide()
 
 
 @button_preview.click
