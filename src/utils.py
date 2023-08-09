@@ -16,15 +16,13 @@ def get_rgba_np(
     ann, OUTPUT_WIDTH_PX, BBOX_THICKNESS_PERCENT, BBOX_OPACITY, FILLBBOX_OPACITY, MASK_OPACITY
 ) -> np.ndarray:
     out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
-    try:
-        ann = ann.resize(out_size)
-    except ValueError:
-        # continue
-        pass
+    ann = ann.resize(out_size)
 
-    render_mask = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
-    render_bbox = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
-    render_fillbbox = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
+    render_mask, render_bbox, render_fillbbox = (
+        np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
+        np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
+        np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
+    )
 
     for label in ann.labels:
         label: sly.Label
@@ -58,4 +56,4 @@ def get_rgba_np(
     rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
     rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba)
 
-    return rgba
+    return rgba, alpha, out_size
