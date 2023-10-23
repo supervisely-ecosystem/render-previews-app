@@ -1,5 +1,5 @@
 <div align="center" markdown>
-<img src="poster placeholder"/>
+<!-- <img src="poster placeholder"/> -->
 
 # Render Previews App GUI
 
