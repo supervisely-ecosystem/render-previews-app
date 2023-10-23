@@ -1,5 +1,5 @@
 <div align="center" markdown>
-<!-- <img src="poster placeholder"/> -->
+<img src="https://github.com/supervisely-ecosystem/render-previews-app/assets/119248312/c549392d-a81f-40c0-8ddd-5ddcc1850c81"/>
 
 # Render Previews App GUI
 
@@ -14,6 +14,8 @@
 [![runs](https://app.supervise.ly/img/badges/runs/supervisely-ecosystem/PLACEHOLDER-FOR-APP-PATH.png)](https://supervise.ly)
 
 </div>
+
+<img src="https://github.com/supervisely-ecosystem/render-previews-app/assets/119248312/00d81b5b-9f0b-49c5-9917-3ea1c36b4565"/>
 
 ## Overview
 
