@@ -30,7 +30,7 @@ editor = Editor(initial_text=json.dumps(settings_dict, indent=4))
 button_preview = Button(text="Preview Image")
 button_save = Button(text="Save settings")
 infotext = Text("Settings saved", "success")
-select_item = SelectItem(dataset_id=2343, compact=False)
+select_item = SelectItem(dataset_id=None, compact=False)
 
 img_orig, img_mask, img_overlap = Image(), Image(), Image()
 
