@@ -27,7 +27,12 @@ def refresh_project_list():
 
 @server.get("/renders", response_class=Response)
 async def image_endpoint(project_id: int, image_id: int):
-    project_meta = sly.ProjectMeta.from_json(g.JSON_METAS[project_id])
+    try:
+        project_meta = g.JSON_METAS[project_id]
+    except:
+        project_meta = g.api.project.get_meta(project_id)
+
+    project_meta = sly.ProjectMeta.from_json(project_meta)
     jann = g.api.annotation.download_json(image_id)
     ann = sly.Annotation.from_json(jann, project_meta)
 
