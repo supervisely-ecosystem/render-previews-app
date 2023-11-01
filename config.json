@@ -2,7 +2,7 @@
   "type": "app",
   "version": "2.0.0",
   "name": "Render previews GUI",
-  "description": "",
+  "description": "Service to render annotations on the fly and show them in Supervisely Dashboard",
   "categories": ["dev"],
   "icon": "",
   "icon_cover": true,
