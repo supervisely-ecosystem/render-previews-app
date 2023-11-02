@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "name": "Render previews GUI",
   "description": "Service to render annotations on the fly and show them in Supervisely Dashboard",
-  "categories": ["dev"],
+  "categories": ["system"],
   "icon": "",
   "icon_cover": true,
   "poster": "https://github.com/supervisely-ecosystem/render-previews-app/assets/119248312/c549392d-a81f-40c0-8ddd-5ddcc1850c81",
