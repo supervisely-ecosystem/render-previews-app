@@ -27,10 +27,10 @@ def refresh_project_list():
 
 @server.get("/renders", response_class=Response)
 async def image_endpoint(project_id: int, image_id: int):
-    if g.api.project.get_info_by_id(project_id) is None:
-        return f"Project with id '{project_id}' is either archived, doesn't exist or you don't have enough permissions to access it"
-    if g.api.image.get_info_by_id(image_id) is None:
-        return f"Image with id '{image_id}' is either archived, doesn't exist or you don't have enough permissions to access it"
+    # if g.api.project.get_info_by_id(project_id) is None:
+    #     return f"Project with id '{project_id}' is either archived, doesn't exist or you don't have enough permissions to access it"
+    # if g.api.image.get_info_by_id(image_id) is None:
+    #     return f"Image with id '{image_id}' is either archived, doesn't exist or you don't have enough permissions to access it"
 
     # try:
     #     project_meta = g.JSON_METAS[project_id]
