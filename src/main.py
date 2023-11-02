@@ -1,13 +1,13 @@
 from pathlib import Path
 
 import cv2
-import supervisely as sly
 from fastapi import Response
-from supervisely.app.widgets import Container
 
 import src.globals as g
 import src.utils as u
+import supervisely as sly
 from src.ui import card_1, get_settings
+from supervisely.app.widgets import Container
 
 layout = Container(widgets=[card_1], direction="vertical")
 
@@ -21,16 +21,23 @@ def refresh_project_list():
     try:
         g.JSON_METAS = g.update_metas()
         return "Projects successfully refreshed"
-    except Exception:
-        return f"Error: see the app log for details"
+    except Exception as e:
+        return f"Error: {e}"
 
 
 @server.get("/renders", response_class=Response)
 async def image_endpoint(project_id: int, image_id: int):
-    try:
-        project_meta = g.JSON_METAS[project_id]
-    except:
-        project_meta = g.api.project.get_meta(project_id)
+    # try:
+    #     project_meta = g.JSON_METAS[project_id]
+    # except:
+
+    if (
+        g.api.project.get_info_by_id(project_id) is None
+        or g.api.project.get_info_by_id(image_id) is None
+    ):
+        return
+
+    project_meta = g.api.project.get_meta(project_id)
 
     project_meta = sly.ProjectMeta.from_json(project_meta)
     jann = g.api.annotation.download_json(image_id)
