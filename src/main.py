@@ -27,17 +27,10 @@ def refresh_project_list():
 
 @server.get("/renders", response_class=Response)
 async def image_endpoint(project_id: int, image_id: int):
-    # if g.api.project.get_info_by_id(project_id) is None:
-    #     return f"Project with id '{project_id}' is either archived, doesn't exist or you don't have enough permissions to access it"
-    # if g.api.image.get_info_by_id(image_id) is None:
-    #     return f"Image with id '{image_id}' is either archived, doesn't exist or you don't have enough permissions to access it"
-
-    # try:
-    #     project_meta = g.JSON_METAS[project_id]
-    # except:
-    # g.api.file.get_info_by_path(g.TEAM_ID, "/text.txt").name
-
-    project_meta = g.api.project.get_meta(project_id)
+    try:
+        project_meta = g.JSON_METAS[project_id]
+    except TypeError:
+        project_meta = g.api.project.get_meta(project_id)
 
     project_meta = sly.ProjectMeta.from_json(project_meta)
     jann = g.api.annotation.download_json(image_id)
