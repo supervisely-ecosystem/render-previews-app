@@ -1,5 +1,5 @@
-# supervisely
-git+https://github.com/supervisely/supervisely.git@renders-preview-logs
+supervisely
+# git+https://github.com/supervisely/supervisely.git@renders-preview-logs
 scikit-image
 # code formatter
 black
