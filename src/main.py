@@ -35,6 +35,7 @@ async def image_endpoint(project_id: int, image_id: int):
     # try:
     #     project_meta = g.JSON_METAS[project_id]
     # except:
+    g.api.file.get_info_by_path("123131313123").name
     project_meta = g.api.project.get_meta(project_id)
 
     project_meta = sly.ProjectMeta.from_json(project_meta)
