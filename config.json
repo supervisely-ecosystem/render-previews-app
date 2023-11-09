@@ -8,6 +8,6 @@
   "icon_cover": true,
   "poster": "https://github.com/supervisely-ecosystem/render-previews-app/assets/119248312/c549392d-a81f-40c0-8ddd-5ddcc1850c81",
   "headless": false,
-  "entrypoint": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+  "entrypoint": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --log-level warning",
   "port": 8000
 }
