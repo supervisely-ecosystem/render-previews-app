@@ -10,7 +10,7 @@ if sly.is_development():
     # load_dotenv(os.path.expanduser("~/supervisely.env"))
     load_dotenv(os.path.expanduser("~/ninja.env"))
 
-api: sly.Api = sly.Api.from_env()
+api = sly.Api.from_env()
 
 TEAM_ID = sly.env.team_id()
 WORKSPACE_ID = sly.env.workspace_id()
