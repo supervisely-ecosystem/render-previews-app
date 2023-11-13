@@ -29,7 +29,7 @@ def refresh_project_list():
 async def image_endpoint(project_id: int, image_id: int):
     try:
         project_meta = g.JSON_METAS[project_id]
-    except TypeError:
+    except:
         project_meta = g.api.project.get_meta(project_id)
 
     project_meta = sly.ProjectMeta.from_json(project_meta)
