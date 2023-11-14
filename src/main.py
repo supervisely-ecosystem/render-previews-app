@@ -31,7 +31,7 @@ async def image_endpoint(project_id: int, image_id: int):
         project_meta = g.JSON_METAS[project_id]
     except:
         project_meta = g.api.project.get_meta(project_id)
-    
+
     try:
         project_meta = sly.ProjectMeta.from_json(project_meta)
         jann = g.api.annotation.download_json(image_id)
@@ -45,14 +45,16 @@ async def image_endpoint(project_id: int, image_id: int):
             settings.get("BBOX_OPACITY", 1),
             settings.get("FILLBBOX_OPACITY", 0.2),
             settings.get("MASK_OPACITY", 0.7),
+            project_id,
+            image_id,
         )
-    
+
         rgba = cv2.cvtColor(rgba.astype("uint8"), cv2.COLOR_RGBA2BGRA)
         success, im = cv2.imencode(".png", rgba)
 
     except Exception as e:
         new_error_message = f"PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {e}"
-        raise e.__class__(new_error_message) from e     
+        raise e.__class__(new_error_message) from e
 
     headers = {"Cache-Control": "max-age=604800", "Content-Type": "image/png"}
     return Response(im.tobytes(), headers=headers, media_type="image/png")
