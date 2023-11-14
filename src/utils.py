@@ -13,18 +13,18 @@ def get_thickness(render: np.ndarray, thickness_percent: float) -> int:
 
 
 def get_rgba_np(
-    ann,
-    OUTPUT_WIDTH_PX,
-    BBOX_THICKNESS_PERCENT,
-    BBOX_OPACITY,
-    FILLBBOX_OPACITY,
-    MASK_OPACITY,
-    project_id,
-    image_id,
+    ann: sly.Annotation,
+    OUTPUT_WIDTH_PX: int,
+    BBOX_THICKNESS_PERCENT: float,
+    BBOX_OPACITY: float,
+    FILLBBOX_OPACITY: float,
+    MASK_OPACITY: float,
+    project_id: int,
+    image_id: int,
 ) -> np.ndarray:
     try:
         out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
-        ann = ann.resize(out_size)
+        ann = ann.resize(out_size, ignore_empty_out_labels=True)
 
         render_mask, render_bbox, render_fillbbox = (
             np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
