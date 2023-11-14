@@ -34,7 +34,11 @@ async def image_endpoint(project_id: int, image_id: int):
 
     project_meta = sly.ProjectMeta.from_json(project_meta)
     jann = g.api.annotation.download_json(image_id)
-    ann = sly.Annotation.from_json(jann, project_meta)
+    try:
+        ann = sly.Annotation.from_json(jann, project_meta)
+    except Exception as e:
+        new_error_message = f"PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {e}"
+        raise e.__class__(new_error_message) from e 
 
     settings = get_settings()
     rgba, _, _ = u.get_rgba_np(
