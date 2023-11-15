@@ -28,4 +28,4 @@ def update_metas():
     return {k: v for k, v in zip(project_ids, project_metas_json)}
 
 
-JSON_METAS = update_metas()
+# JSON_METAS = update_metas()
