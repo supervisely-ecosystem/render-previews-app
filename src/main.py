@@ -28,14 +28,30 @@ def refresh_project_list():
 @server.get("/renders", response_class=Response)
 async def image_endpoint(project_id: int, image_id: int):
     try:
-        project_meta = g.JSON_METAS[project_id]
+        json_project_meta = g.JSON_METAS[project_id]
     except:
-        project_meta = g.api.project.get_meta(project_id)
+        json_project_meta = g.api.project.get_meta(project_id)
 
     try:
-        project_meta = sly.ProjectMeta.from_json(project_meta)
+        project_meta = sly.ProjectMeta.from_json(json_project_meta)
         jann = g.api.annotation.download_json(image_id)
-        ann = sly.Annotation.from_json(jann, project_meta)
+
+        try:
+            ann = sly.Annotation.from_json(jann, project_meta)
+        except RuntimeError:
+            ann_ids = [obj["classId"] for obj in jann["objects"]]
+            filtered_cls = [cls for cls in json_project_meta["classes"] if cls["id"] in ann_ids]
+
+            sorted_ann = sorted(jann["objects"], key=lambda x: x["classId"])
+            sorted_cls = sorted(filtered_cls, key=lambda x: x["id"])
+            cls_to_drop = [
+                _ann["classId"]
+                for _ann, _cls in zip(sorted_ann, sorted_cls)
+                if _ann["geometryType"] == "bitmap" and _cls["shape"] == "rectangle"
+            ]
+
+            jann["objects"] = [obj for obj in jann["objects"] if obj["classId"] not in cls_to_drop]
+            ann = sly.Annotation.from_json(jann, project_meta)
 
         settings = get_settings()
         rgba, _, _ = u.get_rgba_np(
