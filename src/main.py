@@ -38,10 +38,15 @@ async def image_endpoint(project_id: int, image_id: int):
 
         try:
             ann = sly.Annotation.from_json(jann, project_meta)
-            u.handle_broken_annotations(jann, json_project_meta)
+            # u.handle_broken_annotations(jann, json_project_meta)
         except RuntimeError:
             jann["objects"] = u.handle_broken_annotations(jann, json_project_meta)
             ann = sly.Annotation.from_json(jann, project_meta)
+
+        if len(ann.labels) == 0 or any([True for val in ann.img_size if val is None]):
+            raise TypeError(
+                f"The image file is empty. Please check the integrity of your {project_meta.project_type} project."
+            )
 
         settings = get_settings()
         rgba, _, _ = u.get_rgba_np(
