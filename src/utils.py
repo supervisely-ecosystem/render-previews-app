@@ -24,7 +24,7 @@ def get_rgba_np(
 ) -> np.ndarray:
     try:
         out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
-        ann = ann.resize(out_size, ignore_empty_out_labels=True)
+        ann = ann.resize(out_size, skip_empty_masks=True)
 
         render_mask, render_bbox, render_fillbbox = (
             np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
