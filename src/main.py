@@ -38,19 +38,9 @@ async def image_endpoint(project_id: int, image_id: int):
 
         try:
             ann = sly.Annotation.from_json(jann, project_meta)
+            u.handle_broken_annotations(jann, json_project_meta)
         except RuntimeError:
-            ann_ids = [obj["classId"] for obj in jann["objects"]]
-            filtered_cls = [cls for cls in json_project_meta["classes"] if cls["id"] in ann_ids]
-
-            sorted_ann = sorted(jann["objects"], key=lambda x: x["classId"])
-            sorted_cls = sorted(filtered_cls, key=lambda x: x["id"])
-            cls_to_drop = [
-                _ann["classId"]
-                for _ann, _cls in zip(sorted_ann, sorted_cls)
-                if _ann["geometryType"] == "bitmap" and _cls["shape"] == "rectangle"
-            ]
-
-            jann["objects"] = [obj for obj in jann["objects"] if obj["classId"] not in cls_to_drop]
+            jann["objects"] = u.handle_broken_annotations(jann, json_project_meta)
             ann = sly.Annotation.from_json(jann, project_meta)
 
         settings = get_settings()

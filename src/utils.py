@@ -5,6 +5,9 @@ from starlette.responses import StreamingResponse
 
 import src.globals as g
 import supervisely as sly
+from supervisely.geometry.bitmap import Bitmap
+from supervisely.geometry.cuboid import Cuboid
+from supervisely.geometry.rectangle import Rectangle
 
 
 def get_thickness(render: np.ndarray, thickness_percent: float) -> int:
@@ -73,3 +76,29 @@ def get_rgba_np(
         raise e.__class__(new_error_message) from e
 
     return rgba, alpha, out_size
+
+
+def handle_broken_annotations(jann, json_project_meta):
+    ann_ids = [obj["classId"] for obj in jann["objects"]]
+    filtered_cls = [cls for cls in json_project_meta["classes"] if cls["id"] in ann_ids]
+
+    sorted_ann = sorted(jann["objects"], key=lambda x: x["classId"])
+    sorted_cls = sorted(filtered_cls, key=lambda x: x["id"])
+
+    def _conditions(_ann, _cls):
+        if (
+            _ann["geometryType"] == Bitmap.geometry_name()
+            and _cls["shape"] == Rectangle.geometry_name()
+        ):
+            return True
+        if _ann["geometryType"] == Cuboid.geometry_name() and len(_ann["points"]) < 7:
+            return True
+
+        return False
+
+    cls_to_drop = [
+        _ann["classId"]
+        for _ann, _cls in zip(sorted_ann, sorted_cls)
+        if _conditions(_ann, _cls) is True
+    ]
+    return [obj for obj in jann["objects"] if obj["classId"] not in cls_to_drop]
