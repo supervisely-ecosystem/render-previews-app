@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import cv2
-from fastapi import Response
+from fastapi import HTTPException, Response
 
 import src.globals as g
 import src.utils as u
@@ -44,8 +44,9 @@ async def image_endpoint(project_id: int, image_id: int):
             ann = sly.Annotation.from_json(jann, project_meta)
 
         if any([True for val in ann.img_size if val is None]):
-            raise TypeError(
-                f"The image file is empty. Please check the integrity of your {project_meta.project_type} project."
+            raise HTTPException(
+                status_code=500,
+                detail="The image file has no information about its size. Please check the integrity of your project.",
             )
 
         settings = get_settings()
@@ -64,8 +65,9 @@ async def image_endpoint(project_id: int, image_id: int):
         success, im = cv2.imencode(".png", rgba)
 
     except Exception as e:
-        new_error_message = f"PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {e}"
-        raise e.__class__(new_error_message) from e
+        new_error_message = f"PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {e.detail}"
+        raise HTTPException(status_code=500, detail=new_error_message)
+        # raise e.__class__(new_error_message) from e
 
     headers = {"Cache-Control": "max-age=604800", "Content-Type": "image/png"}
     return Response(im.tobytes(), headers=headers, media_type="image/png")
