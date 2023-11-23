@@ -64,10 +64,12 @@ async def image_endpoint(project_id: int, image_id: int):
         rgba = cv2.cvtColor(rgba.astype("uint8"), cv2.COLOR_RGBA2BGRA)
         success, im = cv2.imencode(".png", rgba)
 
-    except Exception as e:
+    except HTTPException as e:
         new_error_message = f"PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {e.detail}"
         raise HTTPException(status_code=500, detail=new_error_message)
-        # raise e.__class__(new_error_message) from e
+    except Exception as e:
+        new_error_message = f"PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {str(e)}"
+        raise e.__class__(new_error_message) from e
 
     headers = {"Cache-Control": "max-age=604800", "Content-Type": "image/png"}
     return Response(im.tobytes(), headers=headers, media_type="image/png")
