@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import cv2
@@ -10,6 +11,24 @@ from src.ui import card_1, get_settings
 from supervisely.app.widgets import Container
 
 layout = Container(widgets=[card_1], direction="vertical")
+
+
+import requests
+
+# from tqdm import tqdm
+from supervisely import tqdm_sly as tqdm
+
+# example video
+url = "https://dev.supervisely.com/h5un6l2bnaz1vj8a9qgms4-public/videos/y/7/7B/GBwTa8MJKRewnR0CN2pkouuhkep4n97T1BtPyEZ8VWCMn1BqY2AHQlFq1tmOC4MkPeF09F4vhdMSusmKAS1iorA7KWwdFesJyxxIZNz66p1zr8ks0lMAeaZ1naVm.mp4"
+local_path = "/tmp/video.mp4"
+
+
+os.environ["ENV"] = "production"
+with requests.get(url, stream=True) as r:
+    r.raise_for_status()
+    with open(local_path, "wb") as f:
+        for chunk in tqdm(r.iter_content(chunk_size=8192), desc="⏬ downloading video"):
+            f.write(chunk)
 
 static_dir = Path(g.STORAGE_DIR)
 app = sly.Application(layout=layout, static_dir=static_dir)
@@ -29,8 +48,9 @@ def refresh_project_list():
 async def image_endpoint(project_id: int, image_id: int):
     try:
         json_project_meta = g.JSON_METAS[project_id]
-    except:
+    except (KeyError, TypeError):
         json_project_meta = g.api.project.get_meta(project_id)
+        g.JSON_METAS[project_id] = json_project_meta
 
     try:
         project_meta = sly.ProjectMeta.from_json(json_project_meta)
