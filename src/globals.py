@@ -7,10 +7,10 @@ import supervisely as sly
 
 if sly.is_development():
     load_dotenv("local.env")
-    # load_dotenv(os.path.expanduser("~/supervisely.env"))
-    load_dotenv(os.path.expanduser("~/ninja.env"))
+    load_dotenv(os.path.expanduser("~/supervisely.env"))
+    # load_dotenv(os.path.expanduser("~/ninja.env"))
 
-api: sly.Api = sly.Api.from_env()
+api = sly.Api.from_env()
 
 TEAM_ID = sly.env.team_id()
 WORKSPACE_ID = sly.env.workspace_id()
@@ -28,4 +28,4 @@ def update_metas():
     return {k: v for k, v in zip(project_ids, project_metas_json)}
 
 
-JSON_METAS = update_metas()
+JSON_METAS = update_metas() if sly.is_production() else {}
