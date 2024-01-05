@@ -2,7 +2,7 @@
     "python.defaultInterpreterPath": ".venv/bin/python",
     "files.exclude": {
         "**/__pycache__": true,
-        ".venv": true,
+        // ".venv": true,
     },
     "black-formatter.args": [
         "--line-length",
