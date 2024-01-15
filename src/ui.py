@@ -91,6 +91,8 @@ def preview() -> None:
             settings.get("BBOX_OPACITY", 1),
             settings.get("FILLBBOX_OPACITY", 0.2),
             settings.get("MASK_OPACITY", 0.7),
+            proj_id,
+            image.id,
         )
 
         orig = g.api.image.download_np(image.id)
