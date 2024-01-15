@@ -1,13 +1,13 @@
 from pathlib import Path
 
 import cv2
-import supervisely as sly
 from fastapi import HTTPException, Response
-from supervisely.app.widgets import Container
 
 import src.globals as g
 import src.utils as u
+import supervisely as sly
 from src.ui import card_1, get_settings
+from supervisely.app.widgets import Container
 
 layout = Container(widgets=[card_1], direction="vertical")
 
@@ -38,8 +38,15 @@ async def image_endpoint(project_id: int, image_id: int):
         jann = g.api.annotation.download_json(image_id)
 
         try:
-            ann = sly.Annotation.from_json(jann, project_meta)
-            # u.handle_broken_annotations(jann, json_project_meta)
+            try:
+                ann = sly.Annotation.from_json(jann, project_meta)
+            except ValueError:  # Tag Meta is none
+                json_project_meta = g.api.project.get_meta(project_id)
+                g.JSON_METAS[project_id] = json_project_meta
+                project_meta = sly.ProjectMeta.from_json(json_project_meta)
+                jann = g.api.annotation.download_json(image_id)
+                ann = sly.Annotation.from_json(jann, project_meta)
+
         except RuntimeError:
             # case 1: new class added to image, but meta is old
             json_project_meta = g.api.project.get_meta(project_id)
