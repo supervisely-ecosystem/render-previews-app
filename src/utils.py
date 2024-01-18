@@ -9,6 +9,7 @@ import src.globals as g
 import supervisely as sly
 from supervisely.geometry.bitmap import Bitmap
 from supervisely.geometry.cuboid import Cuboid
+from supervisely.geometry.polygon import Polygon
 from supervisely.geometry.rectangle import Rectangle
 from supervisely.imaging.color import _validate_hex_color, hex2rgb, random_rgb, rgb2hex
 
@@ -95,6 +96,8 @@ def handle_broken_annotations(jann, json_project_meta):
         ):
             return True
         if _ann["geometryType"] == Cuboid.geometry_name() and len(_ann["points"]) < 7:
+            return True
+        if _ann["geometryType"] == Polygon.geometry_name() and len(_ann["points"]["exterior"] < 3):
             return True
 
         return False
