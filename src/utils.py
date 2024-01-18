@@ -97,7 +97,7 @@ def handle_broken_annotations(jann, json_project_meta):
             return True
         if _ann["geometryType"] == Cuboid.geometry_name() and len(_ann["points"]) < 7:
             return True
-        if _ann["geometryType"] == Polygon.geometry_name() and len(_ann["points"]["exterior"] < 3):
+        if _ann["geometryType"] == Polygon.geometry_name() and len(_ann["points"]["exterior"]) < 3:
             return True
 
         return False
