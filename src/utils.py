@@ -1,3 +1,5 @@
+import re
+
 import cv2
 import numpy as np
 from fastapi import FastAPI
@@ -8,6 +10,7 @@ import supervisely as sly
 from supervisely.geometry.bitmap import Bitmap
 from supervisely.geometry.cuboid import Cuboid
 from supervisely.geometry.rectangle import Rectangle
+from supervisely.imaging.color import _validate_hex_color, hex2rgb, random_rgb, rgb2hex
 
 
 def get_thickness(render: np.ndarray, thickness_percent: float) -> int:
@@ -102,3 +105,12 @@ def handle_broken_annotations(jann, json_project_meta):
         if _conditions(_ann, _cls) is True
     ]
     return [obj for obj in jann["objects"] if obj["classId"] not in cls_to_drop]
+
+
+def handle_broken_project_meta(json_project_meta: dict, e):
+    if "Supported only HEX RGB string format!" in str(e):
+        for idx, cls in enumerate(json_project_meta["classes"]):
+            if _validate_hex_color(cls["color"]) is False:
+                json_project_meta["classes"][idx]["color"] = rgb2hex(random_rgb())
+    else:
+        raise e

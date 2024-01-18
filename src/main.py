@@ -34,7 +34,12 @@ async def image_endpoint(project_id: int, image_id: int):
         g.JSON_METAS[project_id] = json_project_meta
 
     try:
-        project_meta = sly.ProjectMeta.from_json(json_project_meta)
+        try:
+            project_meta = sly.ProjectMeta.from_json(json_project_meta)
+        except ValueError as e:  # Error: Supported only HEX RGB string format!
+            json_project_meta = u.handle_broken_project_meta(json_project_meta, e)
+            project_meta = sly.ProjectMeta.from_json(json_project_meta)
+
         jann = g.api.annotation.download_json(image_id)
 
         try:
