@@ -115,5 +115,6 @@ def handle_broken_project_meta(json_project_meta: dict, e):
         for idx, cls in enumerate(json_project_meta["classes"]):
             if _validate_hex_color(cls["color"]) is False:
                 json_project_meta["classes"][idx]["color"] = rgb2hex(random_rgb())
+        return json_project_meta
     else:
         raise e
