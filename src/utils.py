@@ -110,7 +110,7 @@ def handle_broken_annotations(jann, json_project_meta):
     return [obj for obj in jann["objects"] if obj["classId"] not in cls_to_drop]
 
 
-def handle_broken_project_meta(json_project_meta: dict, e):
+def handle_broken_project_meta(json_project_meta: dict, e) -> dict:
     if "Supported only HEX RGB string format!" in str(e):
         for idx, cls in enumerate(json_project_meta["classes"]):
             if _validate_hex_color(cls["color"]) is False:
