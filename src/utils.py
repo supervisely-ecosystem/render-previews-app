@@ -110,11 +110,12 @@ def handle_broken_annotations(jann, json_project_meta):
     return [obj for obj in jann["objects"] if obj["classId"] not in cls_to_drop]
 
 
-def handle_broken_project_meta(json_project_meta: dict, e) -> dict:
-    if "Supported only HEX RGB string format!" in str(e):
-        for idx, cls in enumerate(json_project_meta["classes"]):
-            if _validate_hex_color(cls["color"]) is False:
-                json_project_meta["classes"][idx]["color"] = rgb2hex(random_rgb())
-        return json_project_meta
-    else:
-        raise e
+def handle_broken_project_meta(json_project_meta: dict) -> dict:
+    sly.logger.warn([c for c in json_project_meta["classes"]])
+    for idx, cls in enumerate(json_project_meta["classes"]):
+        if _validate_hex_color(cls["color"]) is False:
+            sly.logger.warn(
+                f"'{cls['color']}' is not validated as hex. Trying to convert it to: {rgb2hex(random_rgb())}"
+            )
+            json_project_meta["classes"][idx]["color"] = rgb2hex(random_rgb())
+    return json_project_meta
