@@ -101,7 +101,7 @@ def handle_broken_annotations(jann, json_project_meta):
             return True
         if (
             _ann["geometryType"] == Rectangle.geometry_name()
-            and len(_ann["points"]["exterior"]) < 3
+            and len(_ann["points"]["exterior"]) < 2
         ):
             return True
 
