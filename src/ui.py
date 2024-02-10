@@ -14,7 +14,12 @@ from supervisely.app.widgets import (
     Container,
     Editor,
     Empty,
+    Grid,
+    GridChart,
+    GridPlot,
     Image,
+    LineChart,
+    LinePlot,
     SelectItem,
     Text,
 )
@@ -34,11 +39,83 @@ select_item = SelectItem(dataset_id=None, compact=False)
 
 img_orig, img_mask, img_overlap = Image(), Image(), Image()
 
+size1 = 10
+x1 = list(range(size1))
+y1 = np.random.randint(low=10, high=148, size=size1).tolist()
+s1 = [{"x": x, "y": y} for x, y in zip(x1, y1)]
+
+size2 = 30
+x2 = list(range(size2))
+y2 = np.random.randint(low=0, high=300, size=size2).tolist()
+s2 = [{"x": x, "y": y} for x, y in zip(x2, y2)]
+
+data_1 = {
+    "title": "Line 1",
+    "series": [{"name": "Line 1", "data": s1}],
+}
+
+data_2 = {
+    "title": "Line 2",
+    "series": [{"name": "Line 2", "data": s2}],
+}
+
+data_all = {
+    "title": "All lines",
+    "series": [{"name": "Max", "data": s1}, {"name": "Denis", "data": s2}],
+}
+
+line_chart = LineChart(
+    title="Max vs Denis",
+    series=[{"name": "loss", "data": []}],
+    # series=[{"name": "Max", "data": []}, {"name": "Denis", "data": [s2]}],
+    # xaxis_type="category",
+)
+
+butt = Button("add xy")
+# line_chart.set_colors(
+#     [
+#         "rgb(0,0,0)",
+#         "orange",
+#     ]
+# )
+# "rgb(0,0,0)"
+
+# grid_chart = Grid(widgets=[line_chart, line_chart, line_chart], columns=3, gap=0)
+
+
+# LinePlot()
+# LineChart()
+
+# grid_plot = GridPlot(data=[data_1, data_2, data_all], columns=3)
+# grid_chart = GridChart(data=[data_1, data_2, data_all], columns=3)+
+
+
+data_max = {"title": "Max", "series": [{"name": "Max", "data": s1}]}
+data_denis = {"title": "Denis", "series": [{"name": "Denis", "data": s2}]}
+
+# grid_chart = GridChart(data=[data_max, data_denis], columns=2, gap=100)
+
+# gs = GridChart(data="g")
+
+# gs.add_scalars("g", {"s1": 2, "s2": 3}, 1)
+# gs.add_scalar("g/s1", 3, 5)
+
+data_max = {"title": "Max", "series": [{"name": "Max", "data": s1}]}
+data_denis = {"title": "Denis", "series": [{"name": "Denis", "data": s2}]}
+
+# grid_chart = GridChart(data=[data_max, data_denis], columns=2, gap=100)
+
+grid_chart = GridChart(data=[data_max, data_denis], columns=2)
 
 card_1 = Card(
-    title="Render settings",
+    title="Grid Chart",
     content=Container(
         widgets=[
+            # gs,
+            grid_chart,
+            # line_chart,
+            butt,
+            # grid_plot,
             select_item,
             editor,
             Container(
@@ -56,6 +133,20 @@ infotext.hide()
 
 def get_settings() -> dict:
     return settings_dict
+
+
+_x = 1000
+_y = 1000
+
+
+@butt.click
+def tmp():
+    global line_chart
+    global _x, _y
+
+    line_chart.add_to_series(line_chart.widget_id, [{"x": _x, "y": _y}])
+    _y += 100
+    _x += 100
 
 
 @button_save.click
