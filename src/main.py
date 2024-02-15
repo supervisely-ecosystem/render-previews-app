@@ -1,7 +1,12 @@
+import io
+import zlib
 from pathlib import Path
 
 import cv2
+import numpy as np
 from fastapi import HTTPException, Response
+from PIL import Image
+from tqdm import tqdm
 
 import src.globals as g
 import src.utils as u
@@ -14,6 +19,86 @@ layout = Container(widgets=[card_1], direction="vertical")
 static_dir = Path(g.STORAGE_DIR)
 app = sly.Application(layout=layout, static_dir=static_dir)
 server = app.get_server()
+
+# 32796,
+# data = g.api.annotation.download_batch(81589, [28437311, 28437307])[0]
+# a = g.api.annotation.render_anns([28437311, 28437307])
+
+
+# for idx, img_bytes in enumerate(a):
+#     img_arr = np.frombuffer(img_bytes, dtype=np.uint8)
+#     img = Image.open(io.BytesIO(img_bytes))
+#     img.save(f"image_{idx}.png")
+
+
+item_id = 28437311
+jann = g.api.annotation.download_json(item_id)
+project_meta = sly.ProjectMeta.from_json(g.api.project.get_meta(32796))
+ann = sly.Annotation.from_json(jann, project_meta)
+
+
+render = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
+
+ann.draw(render, draw_class_names=False, draw_tags=True)
+
+
+img = Image.fromarray(render)
+img.save("image.png")
+
+
+def dwnl_prj():
+    project = g.api.project.get_info_by_id(34203)
+    p = tqdm(
+        desc="download",
+        total=project.items_count,
+    )
+    # sly.download(g.api, project.id, "/tmp/vid/", progress_cb=p)
+    sly.download(g.api, project.id, "/tmp/pclep/", progress_cb=p)
+    print("3")
+
+
+# def upl_prj_vid():
+#     project_fs = sly.read_project("/tmp/vid/")
+#     p = tqdm(
+#         desc="upload",
+#         total=project_fs.total_items,
+#     )
+#     sly.upload_video_project("/tmp/vid/", g.api, 691, progress_cb=p)
+#     print("8")
+
+
+# def upl_prj():
+#     # project_fs = sly.read_project("/tmp/pics/")
+#     # project_fs = sly.read_project("/tmp/vid/")
+#     # project_fs = sly.read_project("/tmp/vol/")
+#     project_fs = sly.read_project("/tmp/pclep/")
+#     p = tqdm(
+#         desc="upload",
+#         total=project_fs.total_items,
+#     )
+#     # sly.upload("/tmp/pics/", g.api, 691, progress_cb=p)
+#     # sly.upload("/tmp/vid/", g.api, 691)  # , progress_cb=p)
+#     # sly.upload("/tmp/vol/", g.api, 691)  # , progress_cb=p)
+#     sly.upload("/tmp/pclep/", g.api, 691, progress_cb=p)
+#     print("4")
+
+#     # shutil.rmtree("/tmp/lemons/")
+#     # os.makedirs("/tmp/lemons/", exist_ok=True)
+
+
+# def upl_prj_vid():
+#     project_fs = sly.read_project("/tmp/vid/")
+#     # p = tqdm(
+#     #     desc="upload",
+#     #     total=project_fs.total_items,
+#     # )
+#     sly.upload_video_project("/tmp/vid/", g.api, 691)  # , lo, progress_cb=p)
+#     print("8")
+
+
+# dwnl_prj()
+# upl_prj()
+# upl_prj_vid()
 
 
 @server.get("/refresh")
@@ -93,4 +178,11 @@ async def image_endpoint(project_id: int, image_id: int):
         raise e.__class__(new_error_message) from e
 
     headers = {"Cache-Control": "max-age=604800", "Content-Type": "image/png"}
+
+    # import numpy as np
+
+    # btmp = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
+    # ann.draw(btmp)
+
+    # g.api.annotation.render_ann(image_id, btmp, 300, 300, 1)
     return Response(im.tobytes(), headers=headers, media_type="image/png")

@@ -48,7 +48,9 @@ def get_rgba_np(
                 label.draw_contour(render_bbox, thickness=thickness)
                 label.draw(render_fillbbox)
             else:
-                label.draw(render_mask)
+                label.draw(render_mask, draw_class_name=True)
+
+        ann.draw(render_bbox, draw_tags=False)
 
         alpha_mask = (
             MASK_OPACITY - np.all(render_mask == [0, 0, 0], axis=-1).astype("uint8")
