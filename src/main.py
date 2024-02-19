@@ -1,4 +1,5 @@
 import io
+import os
 import zlib
 from pathlib import Path
 
@@ -31,19 +32,19 @@ server = app.get_server()
 #     img.save(f"image_{idx}.png")
 
 
-item_id = 28437311
-jann = g.api.annotation.download_json(item_id)
-project_meta = sly.ProjectMeta.from_json(g.api.project.get_meta(32796))
-ann = sly.Annotation.from_json(jann, project_meta)
+# item_id = 28437311
+# jann = g.api.annotation.download_json(item_id)
+# project_meta = sly.ProjectMeta.from_json(g.api.project.get_meta(32796))
+# ann = sly.Annotation.from_json(jann, project_meta)
 
 
-render = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
+# render = np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8)
 
-ann.draw(render, draw_class_names=False, draw_tags=True)
+# ann.draw(render, draw_class_names=False, draw_tags=True)
 
 
-img = Image.fromarray(render)
-img.save("image.png")
+# img = Image.fromarray(render)
+# img.save("image.png")
 
 
 def dwnl_prj():
@@ -55,16 +56,6 @@ def dwnl_prj():
     # sly.download(g.api, project.id, "/tmp/vid/", progress_cb=p)
     sly.download(g.api, project.id, "/tmp/pclep/", progress_cb=p)
     print("3")
-
-
-# def upl_prj_vid():
-#     project_fs = sly.read_project("/tmp/vid/")
-#     p = tqdm(
-#         desc="upload",
-#         total=project_fs.total_items,
-#     )
-#     sly.upload_video_project("/tmp/vid/", g.api, 691, progress_cb=p)
-#     print("8")
 
 
 # def upl_prj():
@@ -86,19 +77,107 @@ def dwnl_prj():
 #     # os.makedirs("/tmp/lemons/", exist_ok=True)
 
 
-# def upl_prj_vid():
-#     project_fs = sly.read_project("/tmp/vid/")
-#     # p = tqdm(
-#     #     desc="upload",
-#     #     total=project_fs.total_items,
-#     # )
-#     sly.upload_video_project("/tmp/vid/", g.api, 691)  # , lo, progress_cb=p)
-#     print("8")
+def dwn_prj_img():
+    project = g.api.project.get_info_by_id(24823)
+    p = tqdm(
+        desc="download",
+        total=project.items_count,
+    )
+    sly.download_project(g.api, project.id, "/tmp/img/", progress_cb=p)
+    print("5")
 
+
+def upl_prj_img():
+    project_fs = sly.read_project("/tmp/img/")
+    p = tqdm(desc="upload", total=project_fs.total_items)
+    sly.upload_project("/tmp/img/", g.api, 691, progress_cb=p)
+    print("6")
+
+
+def dwnl_prj_vol():
+    project = g.api.project.get_info_by_id(18594)
+    p = tqdm(
+        desc="download",
+        total=project.items_count,
+    )
+    sly.download_volume_project(g.api, project.id, "/tmp/vol/", progress_cb=p)
+    print("9")
+
+
+def upl_prj_vol():
+    project_fs = sly.read_project("/tmp/vol/")
+    p = tqdm(desc="upload", total=project_fs.total_items)
+    sly.upload_volume_project("/tmp/vol/", g.api, 691, progress_cb=p)
+    print("10")
+
+
+def dwnl_prj_vid():
+    project = g.api.project.get_info_by_id(19010)
+    p = tqdm(
+        desc="download",
+        total=project.items_count,
+    )
+    sly.download_video_project(g.api, project.id, "/tmp/vid/", progress_cb=p)
+    print("7")
+
+
+def upl_prj_vid():
+    project_fs = sly.read_project("/tmp/vid/")
+    p = tqdm(desc="upload", total=project_fs.total_items)
+    sly.upload_video_project("/tmp/vid/", g.api, 691, progress_cb=p)
+    print("8")
+
+
+def dwnl_prj_pcl():
+    project = g.api.project.get_info_by_id(35249)
+    p = tqdm(
+        desc="download",
+        total=project.items_count,
+    )
+    sly.download_pointcloud_project(g.api, project.id, "/tmp/pcl/", progress_cb=p)
+    print("11")
+
+
+def upl_prj_pcl():
+    project_fs = sly.read_project("/tmp/pcl/")
+    p = tqdm(desc="upload", total=project_fs.total_items)
+    sly.upload_pointcloud_project("/tmp/pcl/", g.api, 691, progress_cb=p)
+    print("11.5")
+
+
+def dwnl_prj_pclep():
+    project = g.api.project.get_info_by_id(34203)
+    p = tqdm(desc="download", total=project.items_count)
+    sly.download_pointcloud_episode_project(g.api, project.id, "/tmp/pclep/", progress_cb=p)
+    print("12")
+
+
+def upl_prj_pclep():
+    project_fs = sly.read_project("/tmp/pclep/")
+    p = tqdm(desc="upload", total=project_fs.total_items)
+    sly.upload_pointcloud_episode_project("/tmp/pclep/", g.api, 691, progress_cb=p)
+    print("12.5")
+
+
+# os.environ["ENV"] = "production"
 
 # dwnl_prj()
 # upl_prj()
-# upl_prj_vid()
+
+# dwn_prj_img()
+upl_prj_img()
+
+# dwnl_prj_vol()
+upl_prj_vol()
+
+# dwnl_prj_vid()
+upl_prj_vid()
+
+# dwnl_prj_pcl()
+upl_prj_pcl()
+
+# dwnl_prj_pclep()
+upl_prj_pclep()
 
 
 @server.get("/refresh")
