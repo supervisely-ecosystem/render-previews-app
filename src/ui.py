@@ -25,6 +25,12 @@ settings_dict = {
     "FILLBBOX_OPACITY": 0.2,
     "MASK_OPACITY": 0.7,
 }
+settings_dict_renders_on_image = {
+    "OUTPUT_WIDTH_PX": 500,
+    "BBOX_THICKNESS_PERCENT": 0.2,
+    "FILLBBOX_OPACITY": 0.2,
+    "MASK_OPACITY": 0.7,
+}
 editor = Editor(initial_text=json.dumps(settings_dict, indent=4))
 
 button_preview = Button(text="Preview Image")
@@ -54,7 +60,9 @@ card_1 = Card(
 infotext.hide()
 
 
-def get_settings() -> dict:
+def get_settings(endpoint_name="renders") -> dict:
+    if endpoint_name == "render-on-image":
+        return settings_dict_renders_on_image
     return settings_dict
 
 

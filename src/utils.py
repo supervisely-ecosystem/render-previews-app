@@ -28,10 +28,18 @@ def get_rgba_np(
     MASK_OPACITY: float,
     project_id: int,
     image_id: int,
+    draw_class_names: bool = None,
+    draw_tags: bool = None,
+    with_image=None,
+    bitmap: np.ndarray = None,
+    skip_resize=False,
 ) -> np.ndarray:
     try:
-        out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
-        ann = ann.resize(out_size, skip_empty_masks=True)
+        if skip_resize:
+            out_size = ann.img_size
+        else:
+            out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
+            ann = ann.resize(out_size, skip_empty_masks=True)
 
         render_mask, render_bbox, render_fillbbox = (
             np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
@@ -45,10 +53,19 @@ def get_rgba_np(
                 label.draw(render_mask, thickness=25)
             elif type(label.geometry) == sly.Rectangle:
                 thickness = get_thickness(render_bbox, BBOX_THICKNESS_PERCENT)
-                label.draw_contour(render_bbox, thickness=thickness)
+                label.draw_contour(
+                    render_bbox,
+                    thickness=thickness,
+                    # draw_tags=draw_tags, #TODO fix (0,0,0,255) color font
+                    # draw_class_name=draw_class_names,
+                )
                 label.draw(render_fillbbox)
             else:
-                label.draw(render_mask)
+                label.draw(
+                    render_mask,
+                    # draw_tags=draw_tags,
+                    # draw_class_name=draw_class_names,
+                )
 
         alpha_mask = (
             MASK_OPACITY - np.all(render_mask == [0, 0, 0], axis=-1).astype("uint8")
@@ -68,18 +85,40 @@ def get_rgba_np(
         alpha = np.where(alpha_mask != 0, alpha_mask, alpha_fillbbox)
         alpha = np.where(alpha_bbox != 0, alpha_bbox, alpha)
 
-        rgba_mask = np.dstack((render_mask, alpha_mask))
-        rgba_bbox = np.dstack((render_bbox, alpha_bbox))
-        render_fillbbox = np.dstack((render_fillbbox, alpha_fillbbox))
+        rgb = np.where(render_mask != 0, render_mask, render_fillbbox)
+        rgb = np.where(render_bbox != 0, render_bbox, rgb)
 
-        rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
-        rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba)
+        rgba = np.dstack((rgb, alpha))
+
+        result = np.zeros_like(rgb, dtype=np.uint8)
+        if with_image is not None:
+            if bitmap is not None:
+                alpha_ = rgba[:, :, 3] / 255.0
+                alpha_inv = 1.0 - alpha_
+                # result = np.zeros_like(bitmap, dtype=np.uint8)
+                for i in range(3):  # Loop over RGB channels
+                    result[:, :, i] = (alpha_ * rgba[:, :, i] + alpha_inv * bitmap[:, :, i]).astype(
+                        np.uint8
+                    )
+            else:
+                alpha_ = rgba[:, :, 3] / 255.0
+                for i in range(3):
+                    result[:, :, i] = (alpha_ * rgba[:, :, i]).astype(np.uint8)
+
+            for label in ann.labels:
+                font = label._get_font(result.shape[:2])
+                if draw_tags:
+                    label._draw_tags(result, font, add_class_name=draw_class_names)
+                elif draw_class_names:
+                    label._draw_class_name(result, font)
+        else:
+            result = rgba
 
     except Exception as e:
         new_error_message = f"PROJECT ID: {project_id}, IMAGE ID: {image_id}. Error: {e}"
         raise e.__class__(new_error_message) from e
 
-    return rgba, alpha, out_size
+    return result, alpha, out_size
 
 
 def handle_broken_annotations(jann, json_project_meta):
