@@ -55,12 +55,16 @@ def get_rgba_np(
                 label.draw_contour(
                     render_bbox,
                     thickness=thickness,
-                    draw_tags=draw_tags,
-                    draw_class_name=draw_class_names,
+                    # draw_tags=draw_tags, #TODO fix (0,0,0,255) color font
+                    # draw_class_name=draw_class_names,
                 )
                 label.draw(render_fillbbox)
             else:
-                label.draw(render_mask, draw_tags=draw_tags, draw_class_name=draw_class_names)
+                label.draw(
+                    render_mask,
+                    # draw_tags=draw_tags,
+                    # draw_class_name=draw_class_names,
+                )
 
         alpha_mask = (
             MASK_OPACITY - np.all(render_mask == [0, 0, 0], axis=-1).astype("uint8")
@@ -80,25 +84,34 @@ def get_rgba_np(
         alpha = np.where(alpha_mask != 0, alpha_mask, alpha_fillbbox)
         alpha = np.where(alpha_bbox != 0, alpha_bbox, alpha)
 
-        rgba_mask = np.dstack((render_mask, alpha_mask))
-        rgba_bbox = np.dstack((render_bbox, alpha_bbox))
-        render_fillbbox = np.dstack((render_fillbbox, alpha_fillbbox))
+        rgb = np.where(render_mask != 0, render_mask, render_fillbbox)
+        rgb = np.where(render_bbox != 0, render_bbox, rgb)
 
-        rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
-        rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba)
+        rgba = np.dstack((rgb, alpha))
 
-        result = rgba
+        result = np.zeros_like(rgb, dtype=np.uint8)
         if bitmap is not None:
             alpha_ = rgba[:, :, 3] / 255.0
-
-            # Invert the alpha channel for better blending
             alpha_inv = 1.0 - alpha_
-
-            result = np.zeros_like(bitmap, dtype=np.uint8)
+            # result = np.zeros_like(bitmap, dtype=np.uint8)
             for i in range(3):  # Loop over RGB channels
                 result[:, :, i] = (alpha_ * rgba[:, :, i] + alpha_inv * bitmap[:, :, i]).astype(
                     np.uint8
                 )
+        else:
+            alpha_ = rgba[:, :, 3] / 255.0
+            for i in range(3):
+                result[:, :, i] = (alpha_ * rgba[:, :, i]).astype(np.uint8)
+
+        for label in ann.labels:
+            font = label._get_font(result.shape[:2])
+            if draw_tags:
+                label._draw_tags(result, font, add_class_name=draw_class_names)
+            elif draw_class_names:
+                label._draw_class_name(result, font)
+
+            # if draw_tags is True:
+            #     label._draw_tags(result, font)
 
     except Exception as e:
         new_error_message = f"PROJECT ID: {project_id}, IMAGE ID: {image_id}. Error: {e}"
