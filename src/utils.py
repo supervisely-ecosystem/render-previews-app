@@ -30,6 +30,7 @@ def get_rgba_np(
     image_id: int,
     draw_class_names: bool = None,
     draw_tags: bool = None,
+    with_image=None,
     bitmap: np.ndarray = None,
     skip_resize=False,
 ) -> np.ndarray:
@@ -90,28 +91,28 @@ def get_rgba_np(
         rgba = np.dstack((rgb, alpha))
 
         result = np.zeros_like(rgb, dtype=np.uint8)
-        if bitmap is not None:
-            alpha_ = rgba[:, :, 3] / 255.0
-            alpha_inv = 1.0 - alpha_
-            # result = np.zeros_like(bitmap, dtype=np.uint8)
-            for i in range(3):  # Loop over RGB channels
-                result[:, :, i] = (alpha_ * rgba[:, :, i] + alpha_inv * bitmap[:, :, i]).astype(
-                    np.uint8
-                )
+        if with_image is not None:
+            if bitmap is not None:
+                alpha_ = rgba[:, :, 3] / 255.0
+                alpha_inv = 1.0 - alpha_
+                # result = np.zeros_like(bitmap, dtype=np.uint8)
+                for i in range(3):  # Loop over RGB channels
+                    result[:, :, i] = (alpha_ * rgba[:, :, i] + alpha_inv * bitmap[:, :, i]).astype(
+                        np.uint8
+                    )
+            else:
+                alpha_ = rgba[:, :, 3] / 255.0
+                for i in range(3):
+                    result[:, :, i] = (alpha_ * rgba[:, :, i]).astype(np.uint8)
+
+            for label in ann.labels:
+                font = label._get_font(result.shape[:2])
+                if draw_tags:
+                    label._draw_tags(result, font, add_class_name=draw_class_names)
+                elif draw_class_names:
+                    label._draw_class_name(result, font)
         else:
-            alpha_ = rgba[:, :, 3] / 255.0
-            for i in range(3):
-                result[:, :, i] = (alpha_ * rgba[:, :, i]).astype(np.uint8)
-
-        for label in ann.labels:
-            font = label._get_font(result.shape[:2])
-            if draw_tags:
-                label._draw_tags(result, font, add_class_name=draw_class_names)
-            elif draw_class_names:
-                label._draw_class_name(result, font)
-
-            # if draw_tags is True:
-            #     label._draw_tags(result, font)
+            result = rgba
 
     except Exception as e:
         new_error_message = f"PROJECT ID: {project_id}, IMAGE ID: {image_id}. Error: {e}"

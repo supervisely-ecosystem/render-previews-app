@@ -134,6 +134,7 @@ async def render_on_img_endpoint(
             image_id,
             draw_class_names,
             draw_tags,
+            with_image,
             np_image,
             skip_resize=True,
         )
