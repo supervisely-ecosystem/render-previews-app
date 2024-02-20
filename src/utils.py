@@ -28,10 +28,17 @@ def get_rgba_np(
     MASK_OPACITY: float,
     project_id: int,
     image_id: int,
+    draw_class_names: bool = None,
+    draw_tags: bool = None,
+    bitmap: np.ndarray = None,
+    skip_resize=False,
 ) -> np.ndarray:
     try:
-        out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
-        ann = ann.resize(out_size, skip_empty_masks=True)
+        if skip_resize:
+            out_size = ann.img_size
+        else:
+            out_size = (int((ann.img_size[0] / ann.img_size[1]) * OUTPUT_WIDTH_PX), OUTPUT_WIDTH_PX)
+            ann = ann.resize(out_size, skip_empty_masks=True)
 
         render_mask, render_bbox, render_fillbbox = (
             np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
@@ -45,10 +52,15 @@ def get_rgba_np(
                 label.draw(render_mask, thickness=25)
             elif type(label.geometry) == sly.Rectangle:
                 thickness = get_thickness(render_bbox, BBOX_THICKNESS_PERCENT)
-                label.draw_contour(render_bbox, thickness=thickness)
+                label.draw_contour(
+                    render_bbox,
+                    thickness=thickness,
+                    draw_tags=draw_tags,
+                    draw_class_name=draw_class_names,
+                )
                 label.draw(render_fillbbox)
             else:
-                label.draw(render_mask)
+                label.draw(render_mask, draw_tags=draw_tags, draw_class_name=draw_class_names)
 
         alpha_mask = (
             MASK_OPACITY - np.all(render_mask == [0, 0, 0], axis=-1).astype("uint8")
@@ -75,11 +87,24 @@ def get_rgba_np(
         rgba = np.where(rgba_mask != 0, rgba_mask, render_fillbbox)
         rgba = np.where(rgba_bbox != 0, rgba_bbox, rgba)
 
+        result = rgba
+        if bitmap is not None:
+            alpha_ = rgba[:, :, 3] / 255.0
+
+            # Invert the alpha channel for better blending
+            alpha_inv = 1.0 - alpha_
+
+            result = np.zeros_like(bitmap, dtype=np.uint8)
+            for i in range(3):  # Loop over RGB channels
+                result[:, :, i] = (alpha_ * rgba[:, :, i] + alpha_inv * bitmap[:, :, i]).astype(
+                    np.uint8
+                )
+
     except Exception as e:
         new_error_message = f"PROJECT ID: {project_id}, IMAGE ID: {image_id}. Error: {e}"
         raise e.__class__(new_error_message) from e
 
-    return rgba, alpha, out_size
+    return result, alpha, out_size
 
 
 def handle_broken_annotations(jann, json_project_meta):
