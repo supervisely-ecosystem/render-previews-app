@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal, Union
 
 import cv2
+import requests
 from fastapi import HTTPException, Response
 
 import src.globals as g
@@ -27,7 +28,7 @@ def refresh_project_list():
 
 
 @server.get("/renders", response_class=Response)
-async def image_endpoint(project_id: int, image_id: int):
+def image_endpoint(project_id: int, image_id: int):
     try:
         json_project_meta = g.JSON_METAS[project_id]
     except (KeyError, TypeError):
@@ -41,7 +42,11 @@ async def image_endpoint(project_id: int, image_id: int):
             json_project_meta = u.handle_broken_project_meta(json_project_meta)
             project_meta = sly.ProjectMeta.from_json(json_project_meta)
 
-        jann = g.api.annotation.download_json(image_id)
+        try:
+            jann = g.api.annotation.download_json(image_id)
+        except requests.exceptions.HTTPError as e:
+            sly.logger.error(str(e))  # image not accessed
+            raise HTTPException(status_code=404, detail=str(e))
 
         try:
             try:
@@ -98,7 +103,7 @@ async def image_endpoint(project_id: int, image_id: int):
 
 
 @server.get("/render-on-image", response_class=Response)
-async def render_on_img_endpoint(
+def render_on_img_endpoint(
     image_id: int,
     classname: Literal["0", "1"] = "0",
     tags: Literal["0", "1"] = "0",
