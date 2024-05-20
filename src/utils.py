@@ -16,9 +16,12 @@ from supervisely.geometry.rectangle import Rectangle
 from supervisely.imaging.color import _validate_hex_color, hex2rgb, random_rgb, rgb2hex
 
 
-def get_thickness(render: np.ndarray, thickness_percent: float) -> int:
+def get_thickness(render: np.ndarray, thickness_percent: float, from_min=False) -> int:
     render_height, render_width, _ = render.shape
-    return int(render_width * thickness_percent / 100)
+    render_side = render_width
+    if from_min:
+        render_side = min(render_height, render_width)
+    return int(render_side * thickness_percent / 100)
 
 
 def get_rendered_image(image_id, project_id, json_project_meta):
@@ -109,7 +112,15 @@ def get_rgba_np(
         for label in ann.labels:
             label: sly.Label
             if type(label.geometry) == sly.Point:
-                label.draw(render_mask, thickness=25)
+                label.draw(
+                    render_mask,
+                    thickness=get_thickness(render_mask, thickness_percent=3, from_min=True),
+                )
+            elif type(label.geometry) in (sly.GraphNodes, sly.Polyline):
+                label.draw(
+                    render_mask,
+                    thickness=get_thickness(render_mask, thickness_percent=2, from_min=True),
+                )
             elif type(label.geometry) == sly.Rectangle:
                 thickness = get_thickness(render_bbox, BBOX_THICKNESS_PERCENT)
                 label.draw_contour(
