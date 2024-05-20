@@ -2,11 +2,13 @@ import re
 
 import cv2
 import numpy as np
-from fastapi import FastAPI
+import requests
+from fastapi import FastAPI, HTTPException, Response
 from starlette.responses import StreamingResponse
 
 import src.globals as g
 import supervisely as sly
+from src.ui import get_settings
 from supervisely.geometry.bitmap import Bitmap
 from supervisely.geometry.cuboid import Cuboid
 from supervisely.geometry.polygon import Polygon
@@ -17,6 +19,63 @@ from supervisely.imaging.color import _validate_hex_color, hex2rgb, random_rgb, 
 def get_thickness(render: np.ndarray, thickness_percent: float) -> int:
     render_height, render_width, _ = render.shape
     return int(render_width * thickness_percent / 100)
+
+
+def get_rendered_image(image_id, project_id, json_project_meta):
+    try:
+        project_meta = sly.ProjectMeta.from_json(json_project_meta)
+    except ValueError as e:  # Error: Supported only HEX RGB string format!
+        json_project_meta = handle_broken_project_meta(json_project_meta)
+        project_meta = sly.ProjectMeta.from_json(json_project_meta)
+
+    try:
+        jann = g.api.annotation.download_json(image_id)
+    except requests.exceptions.HTTPError as e:
+        sly.logger.error(str(e))  # image not accessed
+        raise HTTPException(status_code=404, detail=str(e))
+
+    try:
+        try:
+            ann = sly.Annotation.from_json(jann, project_meta)
+        except ValueError:  # Tag Meta is none
+            json_project_meta = g.api.project.get_meta(project_id)
+            g.JSON_METAS[project_id] = json_project_meta
+            project_meta = sly.ProjectMeta.from_json(json_project_meta)
+            jann = g.api.annotation.download_json(image_id)
+            ann = sly.Annotation.from_json(jann, project_meta)
+
+    except RuntimeError:
+        # case 1: new class added to image, but meta is old
+        json_project_meta = g.api.project.get_meta(project_id)
+        g.JSON_METAS[project_id] = json_project_meta
+        project_meta = sly.ProjectMeta.from_json(json_project_meta)
+        try:
+            ann = sly.Annotation.from_json(jann, project_meta)
+        except RuntimeError:
+            # case 2: broken annotations
+            jann["objects"] = handle_broken_annotations(jann, json_project_meta)
+            ann = sly.Annotation.from_json(jann, project_meta)
+
+    if any([True for val in ann.img_size if val is None]):
+        raise HTTPException(
+            status_code=500,
+            detail="The image file has no information about its size. Please check the integrity of your project.",
+        )
+
+    settings = get_settings()
+    rgba, _, _ = get_rgba_np(
+        ann,
+        settings.get("OUTPUT_WIDTH_PX", 500),
+        settings.get("BBOX_THICKNESS_PERCENT", 0.5),
+        settings.get("BBOX_OPACITY", 1),
+        settings.get("FILLBBOX_OPACITY", 0.2),
+        settings.get("MASK_OPACITY", 0.7),
+        project_id,
+        image_id,
+    )
+
+    rgba = cv2.cvtColor(rgba.astype("uint8"), cv2.COLOR_RGBA2BGRA)
+    return cv2.imencode(".png", rgba)
 
 
 def get_rgba_np(
