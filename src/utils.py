@@ -1,3 +1,4 @@
+import os
 import re
 
 import cv2
@@ -9,6 +10,7 @@ from starlette.responses import StreamingResponse
 import src.globals as g
 import supervisely as sly
 from src.ui import get_settings
+from supervisely import ImageInfo, ProjectInfo
 from supervisely.geometry.bitmap import Bitmap
 from supervisely.geometry.cuboid import Cuboid
 from supervisely.geometry.polygon import Polygon
@@ -233,3 +235,21 @@ def handle_broken_project_meta(json_project_meta: dict) -> dict:
             )
             json_project_meta["classes"][idx]["color"] = rgb2hex(random_rgb())
     return json_project_meta
+
+
+def image_was_updated(project: ProjectInfo, image: ImageInfo) -> bool:
+
+    cache_dir = f"{g.STORAGE_DIR}/cached_updated_at/{project.id}"
+    os.makedirs(cache_dir, exist_ok=True)
+    image_path = f"{cache_dir}/{image.id}.txt"
+
+    if sly.fs.file_exists(image_path):
+        with open(image_path, "r") as file:
+            cached_updated_at = file.read()
+        if cached_updated_at != image.updated_at:
+            return True
+
+    with open(image_path, "w") as file:
+        file.write(image.updated_at)
+
+    return False

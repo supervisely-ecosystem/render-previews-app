@@ -30,11 +30,16 @@ def refresh_project_list():
 @server.get("/renders", response_class=Response)
 def image_endpoint(project_id: int, image_id: int, user_id: int = None):
     project = g.api.project.get_info_by_id(project_id)
+    image = g.api.image.get_info_by_id(image_id)
 
     try:
         json_project_meta = g.JSON_METAS[project_id]
     except (KeyError, TypeError):
         json_project_meta = g.api.project.get_meta(project_id)
+        g.JSON_METAS[project_id] = json_project_meta
+
+    if u.image_was_updated(project, image):
+        json_project_meta = g.api.project.get_meta(project_id, with_settings=True)
         g.JSON_METAS[project_id] = json_project_meta
 
     try:
