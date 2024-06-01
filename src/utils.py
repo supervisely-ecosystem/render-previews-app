@@ -29,7 +29,7 @@ def get_thickness(render: np.ndarray, thickness_percent: float, from_min=False) 
 def get_rendered_image(image_id, project_id, json_project_meta):
     try:
         project_meta = sly.ProjectMeta.from_json(json_project_meta)
-    except ValueError as e:  # Error: Supported only HEX RGB string format!
+    except Exception as e:  # Error: Supported only HEX RGB string format!
         json_project_meta = handle_broken_project_meta(json_project_meta)
         project_meta = sly.ProjectMeta.from_json(json_project_meta)
 
@@ -227,13 +227,38 @@ def handle_broken_annotations(jann, json_project_meta):
 
 
 def handle_broken_project_meta(json_project_meta: dict) -> dict:
-    sly.logger.warn([c for c in json_project_meta["classes"]])
     for idx, cls in enumerate(json_project_meta["classes"]):
         if _validate_hex_color(cls["color"]) is False:
-            sly.logger.warn(
-                f"'{cls['color']}' is not validated as hex. Trying to convert it to: {rgb2hex(random_rgb())}"
+            new_color = rgb2hex(random_rgb())
+            sly.logger.warning(
+                f"'{cls['color']}' is not validated as hex. Trying to convert it to: {new_color}"
             )
-            json_project_meta["classes"][idx]["color"] = rgb2hex(random_rgb())
+            json_project_meta["classes"][idx]["color"] = new_color
+        # for edge in cls["geometry_config"]["edges"]:
+        #     curr_color = edge.get("color")
+        #     new_color = rgb2hex(random_rgb())
+        #     if curr_color is None:
+        #         edge["color"] = new_color
+        #     else:
+        #         if _validate_hex_color("#" + curr_color) is True:
+        #             edge["color"] = "#" + edge["color"]
+        #         if _validate_hex_color(edge["color"]) is False:
+        #             sly.logger.warning(
+        #                 f"'{cls['color']}' is not validated as hex. Trying to convert it to: {new_color}"
+        #             )
+        for node, data in cls["geometry_config"]["nodes"].items():
+            curr_color = data.get("color")
+            new_color = rgb2hex(random_rgb())
+            if curr_color is None:
+                data["color"] = new_color
+            else:
+                if _validate_hex_color("#" + curr_color) is True:
+                    data["color"] = "#" + data["color"]
+                if _validate_hex_color(data["color"]) is False:
+                    sly.logger.warning(
+                        f"'{cls['color']}' is not validated as hex. Trying to convert it to: {new_color}"
+                    )
+
     return json_project_meta
 
 
