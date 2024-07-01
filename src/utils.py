@@ -11,6 +11,7 @@ import src.globals as g
 import supervisely as sly
 from src.ui import get_settings
 from supervisely import ImageInfo, ProjectInfo
+from supervisely.annotation.tag import TagJsonFields
 from supervisely.geometry.bitmap import Bitmap
 from supervisely.geometry.cuboid import Cuboid
 from supervisely.geometry.polygon import Polygon
@@ -42,12 +43,17 @@ def get_rendered_image(image_id, project_id, json_project_meta):
     try:
         try:
             ann = sly.Annotation.from_json(jann, project_meta)
-        except ValueError:  # Tag Meta is none
+        except ValueError as e:  # Tag Meta is none
             json_project_meta = g.api.project.get_meta(project_id)
             g.JSON_METAS[project_id] = json_project_meta
             project_meta = sly.ProjectMeta.from_json(json_project_meta)
             jann = g.api.annotation.download_json(image_id)
             ann = sly.Annotation.from_json(jann, project_meta)
+        except KeyError as e:  # missing fields in api response
+            if e.args[0].value in TagJsonFields.values():
+                tmp = jann.copy()
+                tmp["tags"] = []
+                ann = sly.Annotation.from_json(tmp, project_meta)
 
     except RuntimeError:
         # case 1: new class added to image, but meta is old
