@@ -49,11 +49,11 @@ def get_rendered_image(image_id, project_id, json_project_meta):
             project_meta = sly.ProjectMeta.from_json(json_project_meta)
             jann = g.api.annotation.download_json(image_id)
             ann = sly.Annotation.from_json(jann, project_meta)
-        except KeyError as e:  # missing fields in api response
-            if e.args[0].value in TagJsonFields.values():
-                tmp = jann.copy()
-                tmp["tags"] = []
-                ann = sly.Annotation.from_json(tmp, project_meta)
+        # except KeyError as e:  # missing fields in api response
+        #     if e.args[0].value in TagJsonFields.values():
+        #         tmp = jann.copy()
+        #         tmp["tags"] = []
+        #         ann = sly.Annotation.from_json(tmp, project_meta)
 
     except RuntimeError:
         # case 1: new class added to image, but meta is old
