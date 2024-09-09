@@ -129,6 +129,11 @@ def get_rgba_np(
                     render_mask,
                     thickness=get_thickness(render_mask, thickness_percent=2, from_min=True),
                 )
+            elif type(label.geometry) in (sly.Cuboid2d,):
+                label.draw(
+                    render_mask,
+                    thickness=get_thickness(render_mask, thickness_percent=1, from_min=True),
+                )
             elif type(label.geometry) == sly.Rectangle:
                 thickness = get_thickness(render_bbox, BBOX_THICKNESS_PERCENT)
                 label.draw_contour(
@@ -252,18 +257,19 @@ def handle_broken_project_meta(json_project_meta: dict) -> dict:
         #             sly.logger.warning(
         #                 f"'{cls['color']}' is not validated as hex. Trying to convert it to: {new_color}"
         #             )
-        for node, data in cls["geometry_config"]["nodes"].items():
-            curr_color = data.get("color")
-            new_color = rgb2hex(random_rgb())
-            if curr_color is None:
-                data["color"] = new_color
-            else:
-                if _validate_hex_color("#" + curr_color) is True:
-                    data["color"] = "#" + data["color"]
-                if _validate_hex_color(data["color"]) is False:
-                    sly.logger.warning(
-                        f"'{cls['color']}' is not validated as hex. Trying to convert it to: {new_color}"
-                    )
+        if cls.get("geometry_config") is not None:
+            for node, data in cls["geometry_config"]["nodes"].items():
+                curr_color = data.get("color")
+                new_color = rgb2hex(random_rgb())
+                if curr_color is None:
+                    data["color"] = new_color
+                else:
+                    if _validate_hex_color("#" + curr_color) is True:
+                        data["color"] = "#" + data["color"]
+                    if _validate_hex_color(data["color"]) is False:
+                        sly.logger.warning(
+                            f"'{cls['color']}' is not validated as hex. Trying to convert it to: {new_color}"
+                        )
 
     return json_project_meta
 
