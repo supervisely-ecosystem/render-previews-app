@@ -4,15 +4,11 @@
   "name": "Render previews GUI",
   "description": "Service to render annotations on the fly and show them in Supervisely",
   "categories": ["system"],
-  "session_tags": [
-    "scalable"
-  ],
-  "icon": "",
-  "icon_cover": true,
+  "session_tags": ["scalable"],
   "poster": "https://github.com/supervisely-ecosystem/render-previews-app/assets/119248312/c549392d-a81f-40c0-8ddd-5ddcc1850c81",
   "headless": false,
   "entrypoint": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --log-level warning",
   "port": 8000,
   "min_instance_version": "6.10.0",
-  "docker_image": "supervisely/base-py-sdk:6.73.132"
+  "docker_image": "supervisely/base-py-sdk:6.73.181"
 }
