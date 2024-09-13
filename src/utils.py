@@ -62,7 +62,7 @@ def get_rendered_image(image_id, project_id, json_project_meta):
         project_meta = sly.ProjectMeta.from_json(json_project_meta)
         try:
             ann = sly.Annotation.from_json(jann, project_meta)
-        except RuntimeError:
+        except (RuntimeError, ValueError):
             # case 2: broken annotations
             jann["objects"] = handle_broken_annotations(jann, json_project_meta)
             ann = sly.Annotation.from_json(jann, project_meta)
@@ -206,7 +206,8 @@ def get_rgba_np(
 
 def handle_broken_annotations(jann, json_project_meta):
     ann_ids = [obj["classId"] for obj in jann["objects"]]
-    filtered_cls = [cls for cls in json_project_meta["classes"] if cls["id"] in ann_ids]
+    class_dict = {cls["id"]: cls for cls in json_project_meta["classes"]}
+    filtered_cls = [class_dict[ann_id] for ann_id in ann_ids if ann_id in class_dict]
 
     sorted_ann = sorted(jann["objects"], key=lambda x: x["classId"])
     sorted_cls = sorted(filtered_cls, key=lambda x: x["id"])
@@ -226,7 +227,10 @@ def handle_broken_annotations(jann, json_project_meta):
             and len(_ann["points"]["exterior"]) < 2
         ):
             return True
-
+        if _ann["geometryType"] == Bitmap.geometry_name() and not np.any(
+            Bitmap.base64_2_data(_ann["bitmap"]["data"])
+        ):
+            return True
         return False
 
     cls_to_drop = [
