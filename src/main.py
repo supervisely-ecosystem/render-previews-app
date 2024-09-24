@@ -31,6 +31,8 @@ def refresh_project_list():
 def image_endpoint(project_id: int, image_id: int, user_id: int = None):
     project = g.api.project.get_info_by_id(project_id, raise_error=True)
     image = g.api.image.get_info_by_id(image_id)
+    if image is None:
+        raise HTTPException(status_code=404, detail=f"Image with ID={image_id} not found")
 
     try:
         json_project_meta = g.JSON_METAS[project_id]
