@@ -117,6 +117,7 @@ def get_rgba_np(
             np.zeros((ann.img_size[0], ann.img_size[1], 3), dtype=np.uint8),
         )
 
+        alpha_masks = []
         for label in ann.labels:
             label: sly.Label
             if type(label.geometry) == sly.Point:
@@ -143,12 +144,27 @@ def get_rgba_np(
                     # draw_class_name=draw_class_names,
                 )
                 label.draw(render_fillbbox)
+            elif type(label.geometry) == sly.AlphaMask:
+                alpha_masks.append(label)
+                # label.draw(render_mask, color=[255, 255, 255])
             else:
                 label.draw(
                     render_mask,
                     # draw_tags=draw_tags,
                     # draw_class_name=draw_class_names,
                 )
+        if len(alpha_masks) > 0:
+            temp_mask = render_mask.copy()
+            for label in alpha_masks:
+                label.draw(temp_mask, color=[255, 255, 255])
+            cv2.normalize(temp_mask, temp_mask, 0, 255, cv2.NORM_MINMAX)
+            temp_mask = cv2.applyColorMap(temp_mask, cv2.COLORMAP_JET)
+            BG_COLOR = np.array([128, 0, 0], dtype=np.uint8)
+            temp_mask = np.where(temp_mask == BG_COLOR, 0, temp_mask)
+            render_mask = cv2.addWeighted(render_mask, 0.5, temp_mask, 0.5, 0)
+
+            
+        
 
         alpha_mask = (
             MASK_OPACITY - np.all(render_mask == [0, 0, 0], axis=-1).astype("uint8")
