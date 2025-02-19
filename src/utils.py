@@ -88,6 +88,17 @@ def get_rendered_image(image_id, project_id, json_project_meta):
     rgba = cv2.cvtColor(rgba.astype("uint8"), cv2.COLOR_RGBA2BGRA)
     return cv2.imencode(".png", rgba)
 
+def color_map(img_size, data: np.ndarray, origin: sly.PointLocation) -> np.ndarray:
+    mask = np.zeros(img_size, dtype=np.uint8)
+    x, y = origin.col, origin.row
+    h, w = data.shape[:2]
+    mask[y : y + h, x : x + w] = data
+    cv2.normalize(mask, mask, 0, 255, cv2.NORM_MINMAX)
+    mask = cv2.applyColorMap(mask, cv2.COLORMAP_JET)
+    BG_COLOR = np.array([128, 0, 0], dtype=np.uint8)
+    mask = np.where(mask == BG_COLOR, 0, mask)
+    return mask
+
 
 def get_rgba_np(
     ann: sly.Annotation,
@@ -156,11 +167,8 @@ def get_rgba_np(
         if len(alpha_masks) > 0:
             temp_mask = render_mask.copy()
             for label in alpha_masks:
-                label.draw(temp_mask, color=[255, 255, 255])
-            cv2.normalize(temp_mask, temp_mask, 0, 255, cv2.NORM_MINMAX)
-            temp_mask = cv2.applyColorMap(temp_mask, cv2.COLORMAP_JET)
-            BG_COLOR = np.array([128, 0, 0], dtype=np.uint8)
-            temp_mask = np.where(temp_mask == BG_COLOR, 0, temp_mask)
+                temp = color_map(ann.img_size, label.geometry.data, label.geometry.origin)
+                temp_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, temp_mask)
             render_mask = cv2.addWeighted(render_mask, 0.5, temp_mask, 0.5, 0)
 
             
