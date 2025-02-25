@@ -105,6 +105,8 @@ def preview() -> None:
             settings.get("MASK_OPACITY", 0.7),
             proj_id,
             image.id,
+            render_heatmap=settings.get("RENDER_HEATMAPS", False),
+            heatmap_threshold=settings.get("HEATMAP_THRESHOLD", 0.2),
         )
 
         orig = g.api.image.download_np(image.id)

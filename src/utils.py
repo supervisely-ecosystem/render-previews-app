@@ -172,12 +172,14 @@ def get_rgba_np(
                     # draw_class_name=draw_class_names,
                 )
         if len(alpha_masks) > 0:
-            # temp_mask = render_mask.copy()
+            temp_mask = render_mask.copy()
             for label in alpha_masks:
                 temp = color_map(ann.img_size, label.geometry.data, label.geometry.origin, heatmap_threshold)
-                # temp_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, temp_mask)
-                render_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, render_mask)
+                temp_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, temp_mask)
+                # render_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, render_mask)
             # render_mask = cv2.addWeighted(render_mask, 0.5, temp_mask, 0.5, 0)
+            temp_mask = cv2.cvtColor(temp_mask, cv2.COLOR_BGR2RGB)
+            render_mask = np.where(np.any(temp_mask > 0, axis=-1, keepdims=True), temp_mask, render_mask)
 
             
         
