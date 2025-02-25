@@ -83,16 +83,21 @@ def get_rendered_image(image_id, project_id, json_project_meta):
         settings.get("MASK_OPACITY", 0.7),
         project_id,
         image_id,
+        render_heatmap=settings.get("RENDER_HEATMAPS", False),
+        heatmap_threshold=settings.get("HEATMAP_THRESHOLD", 0.2),
     )
 
     rgba = cv2.cvtColor(rgba.astype("uint8"), cv2.COLOR_RGBA2BGRA)
     return cv2.imencode(".png", rgba)
 
-def color_map(img_size, data: np.ndarray, origin: sly.PointLocation) -> np.ndarray:
+def color_map(img_size, data: np.ndarray, origin: sly.PointLocation, threshold: float) -> np.ndarray:
     mask = np.zeros(img_size, dtype=np.uint8)
     x, y = origin.col, origin.row
     h, w = data.shape[:2]
+    threshold = threshold or 0.2
+    threshold = int(255 * threshold)
     mask[y : y + h, x : x + w] = data
+    mask[mask < threshold] = 0
     cv2.normalize(mask, mask, 0, 255, cv2.NORM_MINMAX)
     mask = cv2.applyColorMap(mask, cv2.COLORMAP_JET)
     BG_COLOR = np.array([128, 0, 0], dtype=np.uint8)
@@ -114,6 +119,8 @@ def get_rgba_np(
     with_image=None,
     bitmap: np.ndarray = None,
     skip_resize=False,
+    render_heatmap=False,
+    heatmap_threshold=None,
 ) -> np.ndarray:
     try:
         if skip_resize:
@@ -156,8 +163,8 @@ def get_rgba_np(
                 )
                 label.draw(render_fillbbox)
             elif type(label.geometry) == sly.AlphaMask:
-                alpha_masks.append(label)
-                # label.draw(render_mask, color=[255, 255, 255])
+                if render_heatmap:
+                    alpha_masks.append(label)
             else:
                 label.draw(
                     render_mask,
@@ -165,11 +172,12 @@ def get_rgba_np(
                     # draw_class_name=draw_class_names,
                 )
         if len(alpha_masks) > 0:
-            temp_mask = render_mask.copy()
+            # temp_mask = render_mask.copy()
             for label in alpha_masks:
-                temp = color_map(ann.img_size, label.geometry.data, label.geometry.origin)
-                temp_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, temp_mask)
-            render_mask = cv2.addWeighted(render_mask, 0.5, temp_mask, 0.5, 0)
+                temp = color_map(ann.img_size, label.geometry.data, label.geometry.origin, heatmap_threshold)
+                # temp_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, temp_mask)
+                render_mask = np.where(np.any(temp > 0, axis=-1, keepdims=True), temp, render_mask)
+            # render_mask = cv2.addWeighted(render_mask, 0.5, temp_mask, 0.5, 0)
 
             
         
