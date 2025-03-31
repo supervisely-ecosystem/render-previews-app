@@ -92,6 +92,9 @@ def preview() -> None:
     # project_meta = g.JSON_METAS[proj_id]
 
     image = g.api.image.get_info_by_id(item_id)
+    if image is None:
+        sly.logger.error(f"Image with ID={item_id} not found")
+        return
     jann = g.api.annotation.download_json(item_id)
     ann = sly.Annotation.from_json(jann, project_meta)
 
