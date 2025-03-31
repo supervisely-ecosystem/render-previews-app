@@ -39,6 +39,13 @@ def get_rendered_image(image_id, project_id, json_project_meta):
     except requests.exceptions.HTTPError as e:
         sly.logger.error(str(e))  # image not accessed
         raise HTTPException(status_code=404, detail=str(e))
+    except requests.exceptions.RetryError as e:
+        img_info = g.api.image.get_info_by_id(image_id)
+        if img_info is None:
+            raise HTTPException(status_code=404, detail=f"Image with ID={image_id} not found")
+        else:
+            raise HTTPException(status_code=500, detail=f"Error downloading annotation for image with ID={image_id}")
+
 
     try:
         try:
