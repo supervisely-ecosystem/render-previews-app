@@ -45,7 +45,9 @@ def image_endpoint(project_id: int, image_id: int, user_id: int = None, figure_i
         g.JSON_METAS[project_id] = json_project_meta
 
     try:
-        success, image = u.get_rendered_image(image_id, project_id, json_project_meta)
+        success, image = u.get_rendered_image(
+            image_id, project_id, json_project_meta, figure_id=figure_id
+        )
 
     except HTTPException as e:
         new_error_message = f"USER_ID: {user_id}, TEAM_ID: {project.team_id}, WORKSPACE_ID: {project.workspace_id}, PROJECT_ID: {project_id}, IMAGE_ID: {image_id}. Error: {e.detail}"
