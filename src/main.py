@@ -28,7 +28,7 @@ def refresh_project_list():
 
 
 @server.get("/renders", response_class=Response)
-def image_endpoint(project_id: int, image_id: int, user_id: int = None):
+def image_endpoint(project_id: int, image_id: int, user_id: int = None, figure_id: int = None):
     project = g.api.project.get_info_by_id(project_id, raise_error=True)
     image = g.api.image.get_info_by_id(image_id)
     if image is None:
