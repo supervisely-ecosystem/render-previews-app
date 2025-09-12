@@ -71,7 +71,7 @@ def render_on_img_endpoint(
     try:
         image_info = g.api.image.get_info_by_id(image_id)
         if image_info is None:
-            raise ValueError(f"The image {image_id} is not existed.")
+            raise ValueError(f"Image (id: {image_id}) not found")
 
         dataset = g.api.dataset.get_info_by_id(image_info.dataset_id)
         json_project_meta = g.api.project.get_meta(dataset.project_id)
