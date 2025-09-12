@@ -27,7 +27,7 @@ def get_thickness(render: np.ndarray, thickness_percent: float, from_min=False) 
     return int(render_side * thickness_percent / 100)
 
 
-def get_rendered_image(image_id, project_id, json_project_meta):
+def get_rendered_image(image_id, project_id, json_project_meta, figure_id=None):
     try:
         project_meta = sly.ProjectMeta.from_json(json_project_meta)
     except Exception as e:  # Error: Supported only HEX RGB string format!
@@ -72,6 +72,15 @@ def get_rendered_image(image_id, project_id, json_project_meta):
             status_code=500,
             detail="The image file has no information about its size. Please check the integrity of your project.",
         )
+
+    if figure_id is not None:
+        new_labels = [label for label in ann.labels if label.sly_id == figure_id]
+        if len(new_labels) == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Figure with ID={figure_id} not found in image ID={image_id}",
+            )
+        ann = ann.clone(labels=new_labels)
 
     settings = get_settings()
     rgba, _, _ = get_rgba_np(
