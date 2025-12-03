@@ -162,7 +162,7 @@ def get_rgba_np(
                     render_mask,
                     thickness=get_thickness(render_mask, thickness_percent=1, from_min=True),
                 )
-            elif type(label.geometry) == sly.Rectangle:
+            elif type(label.geometry) in (sly.Rectangle, sly.OrientedBBox):
                 thickness = get_thickness(render_bbox, BBOX_THICKNESS_PERCENT)
                 label.draw_contour(
                     render_bbox,
