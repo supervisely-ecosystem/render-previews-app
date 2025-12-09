@@ -1,7 +1,4 @@
-FROM supervisely/base-py-sdk:6.73.34
-
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r /app/requirements.txt
+FROM supervisely/base-py-sdk:6.73.483
 
 WORKDIR /app
 COPY . /app
