@@ -14,5 +14,5 @@
   "entrypoint": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --log-level warning",
   "port": 8000,
   "instance_version": "6.15.60",
-  "docker_image": "supervisely/base-py-sdk:6.73.564"
+  "docker_image": "supervisely/base-py-sdk:6.74.10"
 }
